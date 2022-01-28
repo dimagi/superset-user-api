@@ -27,32 +27,35 @@ endpoint on the user, and include all of the user's roles. To remove the
    from the request.
 
 """
-from flask_appbuilder import expose, ModelView
+from flask_appbuilder.api import ModelRestApi, expose
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.security.sqla.models import User, Role
-from superset.views.base import api
+from superset import appbuilder
 
 
-class RoleAPIView(ModelView):
+class RoleAPIView(ModelRestApi):
+    resource_name = 'role'
     datamodel = SQLAInterface(Role)
 
-    ...
+    allow_browser_login = True
+
+    # search_filters = {"name": [CustomFilter]}
+    openapi_spec_methods = {
+        "get_list": {
+            "get": {
+                "description": "Get roles",
+            }
+        }
+    }
 
 
-class UserAPIView(ModelView):
+appbuilder.add_api(RoleAPIView)
+
+
+class UserAPIView(ModelRestApi):
+    resource_name = 'user'
     datamodel = SQLAInterface(User)
+    allow_browser_login = True
 
-    @api
-    @expose('/users/', methods=['POST'])
-    def create_user(self):
-        ...
 
-    @api
-    @expose('/users/<username>', methods=['DELETE'])
-    def delete_user(self, username):
-        ...
-
-    @api
-    @expose('/users/<username>/roles/', methods=['PUT'])
-    def set_user_roles(self, username):
-        ...
+appbuilder.add_api(UserAPIView)
